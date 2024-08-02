@@ -1,0 +1,68 @@
+Dados completos de pessoas físicas:
+
+id | nome            | endereco    | contato     | cpf
+---|-----------------|-------------|-------------|-----------
+1  | Pessoa Fisica 1 | Endereco 1  | Contato 1   | 12345678901
+
+
+Dados completos de pessoas jurídicas:
+
+id | nome             | endereco   | contato     | cnpj
+---|------------------|------------|-------------|-----------------
+2  | Pessoa Juridica 1| Endereco 2 | Contato 2   | 12345678000101
+
+
+Movimentações de entrada:
+
+id | tipo | idProduto | idPessoa | quantidade | precoUnitario | produto  | fornecedor
+---|------|-----------|----------|------------|---------------|----------|-----------
+1  | E    | 1         | 2        | 5          | 14.00         | Produto A| Pessoa Juridica 1
+
+
+Movimentações de saída:
+
+id | tipo | idProduto | idPessoa | quantidade | precoUnitario | produto  | comprador
+---|------|-----------|----------|------------|---------------|----------|-----------
+2  | S    | 1         | 2        | 2          | 15.50         | Produto A| Pessoa Juridica 1
+
+
+Valor total das entradas agrupadas por produto:
+
+idProduto | valorTotal
+----------|------------
+1         | 70.00
+
+
+Valor total das saídas agrupadas por produto:
+
+idProduto | valorTotal
+----------|------------
+1         | 31.00
+
+
+Operadores que não efetuaram movimentações de entrada:
+
+id | nome | senha
+---|------|------
+2  | op2  | op2
+
+
+Valor total de entrada agrupado por operador:
+
+idPessoa | valorTotal
+----------|------------
+2         | 70.00
+
+
+Valor total de saída agrupado por operador:
+
+idPessoa | valorTotal
+----------|------------
+2         | 31.00
+
+
+Valor médio de venda por produto:
+
+idProduto | precoMedio
+----------|------------
+1         | 15.50

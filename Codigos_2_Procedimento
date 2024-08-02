@@ -1,0 +1,123 @@
+-- Criação da tabela Usuarios
+CREATE TABLE Usuarios (
+    id INT PRIMARY KEY IDENTITY,
+    nome VARCHAR(100),
+    senha VARCHAR(100)
+);
+
+-- Criação da sequence para geração de IDs de Pessoa
+CREATE SEQUENCE SeqPessoa AS INT START WITH 1 INCREMENT BY 1;
+
+-- Criação da tabela Pessoa
+CREATE TABLE Pessoa (
+    id INT PRIMARY KEY DEFAULT NEXT VALUE FOR SeqPessoa,
+    nome VARCHAR(100),
+    endereco VARCHAR(200),
+    contato VARCHAR(100)
+);
+
+-- Criação da tabela PessoaFisica
+CREATE TABLE PessoaFisica (
+    id INT PRIMARY KEY,
+    cpf VARCHAR(11),
+    FOREIGN KEY (id) REFERENCES Pessoa(id)
+);
+
+-- Criação da tabela PessoaJuridica
+CREATE TABLE PessoaJuridica (
+    id INT PRIMARY KEY,
+    cnpj VARCHAR(14),
+    FOREIGN KEY (id) REFERENCES Pessoa(id)
+);
+
+-- Criação da tabela Produto
+CREATE TABLE Produto (
+    id INT PRIMARY KEY IDENTITY,
+    nome VARCHAR(100),
+    quantidade INT,
+    precoVenda DECIMAL(10, 2)
+);
+
+-- Criação da tabela Movimentacao
+CREATE TABLE Movimentacao (
+    id INT PRIMARY KEY IDENTITY,
+    tipo CHAR(1),
+    idProduto INT,
+    idPessoa INT,
+    quantidade INT,
+    precoUnitario DECIMAL(10, 2),
+    FOREIGN KEY (idProduto) REFERENCES Produto(id),
+    FOREIGN KEY (idPessoa) REFERENCES Pessoa(id)
+);
+
+-- Inserir dados na tabela Usuarios
+INSERT INTO Usuarios (nome, senha) VALUES ('op1', 'op1');
+INSERT INTO Usuarios (nome, senha) VALUES ('op2', 'op2');
+
+-- Inserir produtos na tabela Produto
+INSERT INTO Produto (nome, quantidade, precoVenda) VALUES ('Produto A', 10, 15.50);
+INSERT INTO Produto (nome, quantidade, precoVenda) VALUES ('Produto B', 20, 30.00);
+
+-- Inserir pessoa física
+DECLARE @idPessoa INT;
+SELECT @idPessoa = NEXT VALUE FOR SeqPessoa;
+
+INSERT INTO Pessoa (id, nome, endereco, contato) VALUES (@idPessoa, 'Pessoa Fisica 1', 'Endereco 1', 'Contato 1');
+INSERT INTO PessoaFisica (id, cpf) VALUES (@idPessoa, '12345678901');
+
+-- Inserir pessoa jurídica
+SELECT @idPessoa = NEXT VALUE FOR SeqPessoa;
+
+INSERT INTO Pessoa (id, nome, endereco, contato) VALUES (@idPessoa, 'Pessoa Juridica 1', 'Endereco 2', 'Contato 2');
+INSERT INTO PessoaJuridica (id, cnpj) VALUES (@idPessoa, '12345678000101');
+
+-- Inserir movimentações de entrada e saída
+-- Entrada
+INSERT INTO Movimentacao (tipo, idProduto, idPessoa, quantidade, precoUnitario) VALUES ('E', 1, @idPessoa, 5, 14.00);
+
+-- Saída
+INSERT INTO Movimentacao (tipo, idProduto, idPessoa, quantidade, precoUnitario) VALUES ('S', 1, @idPessoa, 2, 15.50);
+
+-- Consultas
+-- Dados completos de pessoas físicas
+SELECT * FROM Pessoa p JOIN PessoaFisica pf ON p.id = pf.id;
+
+-- Dados completos de pessoas jurídicas
+SELECT * FROM Pessoa p JOIN PessoaJuridica pj ON p.id = pj.id;
+
+-- Movimentações de entrada
+SELECT m.*, p.nome AS produto, pe.nome AS fornecedor FROM Movimentacao m
+JOIN Produto p ON m.idProduto = p.id
+JOIN Pessoa pe ON m.idPessoa = pe.id
+WHERE m.tipo = 'E';
+
+-- Movimentações de saída
+SELECT m.*, p.nome AS produto, pe.nome AS comprador FROM Movimentacao m
+JOIN Produto p ON m.idProduto = p.id
+JOIN Pessoa pe ON m.idPessoa = pe.id
+WHERE m.tipo = 'S';
+
+-- Valor total das entradas agrupadas por produto
+SELECT idProduto, SUM(quantidade * precoUnitario) AS valorTotal FROM Movimentacao
+WHERE tipo = 'E' GROUP BY idProduto;
+
+-- Valor total das saídas agrupadas por produto
+SELECT idProduto, SUM(quantidade * precoUnitario) AS valorTotal FROM Movimentacao
+WHERE tipo = 'S' GROUP BY idProduto;
+
+-- Operadores que não efetuaram movimentações de entrada
+SELECT * FROM Usuarios u
+LEFT JOIN Movimentacao m ON u.id = m.idPessoa
+WHERE m.tipo IS NULL OR m.tipo != 'E';
+
+-- Valor total de entrada agrupado por operador
+SELECT idPessoa, SUM(quantidade * precoUnitario) AS valorTotal FROM Movimentacao
+WHERE tipo = 'E' GROUP BY idPessoa;
+
+-- Valor total de saída agrupado por operador
+SELECT idPessoa, SUM(quantidade * precoUnitario) AS valorTotal FROM Movimentacao
+WHERE tipo = 'S' GROUP BY idPessoa;
+
+-- Valor médio de venda por produto
+SELECT idProduto, AVG(precoUnitario) AS precoMedio FROM Movimentacao
+WHERE tipo = 'S' GROUP BY idProduto;
